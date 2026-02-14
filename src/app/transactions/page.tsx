@@ -2,11 +2,15 @@
 
 import { useTransactionStore } from '@/lib/store/useTransactionStore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { formatCurrency, cn } from "@/lib/utils";
-import { ShoppingBag, Utensils, Zap, Bus, ArrowUpRight, Search } from "lucide-react"; // Import Search
+import { ShoppingBag, Utensils, Zap, Bus, ArrowUpRight, Search, Trash2, Plus, Gift, Briefcase, Heart, Film, MoreHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from 'react'; // Import useEffect for hydration fix
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { TransactionForm } from "@/components/forms/TransactionForm";
+import { FloatingAddButton } from "@/components/layout/FloatingAddButton";
 
 const getCategoryIcon = (category: string) => {
     switch (category.toLowerCase()) {
@@ -14,15 +18,21 @@ const getCategoryIcon = (category: string) => {
         case 'transport': return <Bus className="h-4 w-4" />;
         case 'utilities': return <Zap className="h-4 w-4" />;
         case 'shopping': case 'groceries': return <ShoppingBag className="h-4 w-4" />;
-        case 'freelance': case 'salary': case 'income': return <ArrowUpRight className="h-4 w-4" />;
-        default: return <ShoppingBag className="h-4 w-4" />;
+        case 'freelance': case 'salary': return <Briefcase className="h-4 w-4" />;
+        case 'bonus': return <Gift className="h-4 w-4" />;
+        case 'health': return <Heart className="h-4 w-4" />;
+        case 'entertainment': return <Film className="h-4 w-4" />;
+        case 'investment': return <ArrowUpRight className="h-4 w-4" />;
+        default: return <MoreHorizontal className="h-4 w-4" />;
     }
 };
 
 export default function TransactionsPage() {
-    const { transactions } = useTransactionStore();
+    const { transactions, deleteTransaction } = useTransactionStore();
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
     const [mounted, setMounted] = useState(false);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -31,9 +41,15 @@ export default function TransactionsPage() {
 
     if (!mounted) return null;
 
-    const filteredTransactions = transactions.filter(t =>
-        t.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.category.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredTransactions = transactions.filter(t => {
+        const matchesSearch = t.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            t.category.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = filterType === 'all' || t.type === filterType;
+        return matchesSearch && matchesType;
+    });
+
+    const totalFiltered = filteredTransactions.reduce((acc, t) =>
+        t.type === 'income' ? acc + t.amount : acc - t.amount, 0
     );
 
     return (
@@ -45,33 +61,73 @@ export default function TransactionsPage() {
                         Manage and view your complete transaction history.
                     </p>
                 </div>
-                <div className="relative w-full md:w-64">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="bg-emerald-600 hover:bg-emerald-700 gap-2">
+                            <Plus className="h-4 w-4" />
+                            Add Transaction
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <TransactionForm onSuccess={() => setDialogOpen(false)} />
+                    </DialogContent>
+                </Dialog>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search transactions..."
-                        className="pl-8"
+                        placeholder="Search by note or category..."
+                        className="pl-9"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
+                </div>
+                <div className="flex bg-secondary p-1 rounded-lg">
+                    {(['all', 'income', 'expense'] as const).map((type) => (
+                        <button
+                            key={type}
+                            onClick={() => setFilterType(type)}
+                            className={cn(
+                                "px-4 py-1.5 text-sm font-medium rounded-md transition-all capitalize",
+                                filterType === type
+                                    ? "bg-white shadow text-foreground dark:bg-slate-800"
+                                    : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            {type}
+                        </button>
+                    ))}
                 </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>History</CardTitle>
-                    <CardDescription>
-                        {filteredTransactions.length} transactions found.
-                    </CardDescription>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle>History</CardTitle>
+                            <CardDescription>
+                                {filteredTransactions.length} transactions found
+                            </CardDescription>
+                        </div>
+                        <div className={cn("text-lg font-bold", totalFiltered >= 0 ? "text-emerald-600" : "text-rose-500")}>
+                            {totalFiltered >= 0 ? '+' : ''}{formatCurrency(totalFiltered)}
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {filteredTransactions.length === 0 ? (
                             <div className="text-center py-10 text-muted-foreground">
-                                No transactions found.
+                                <ShoppingBag className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                                <p>No transactions found.</p>
+                                <p className="text-xs mt-1">Try adjusting your search or filters.</p>
                             </div>
                         ) : (
                             filteredTransactions.map((transaction) => (
-                                <div key={transaction.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:bg-accent/50 transition-colors">
+                                <div key={transaction.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:bg-accent/50 transition-colors group">
                                     <div className="flex items-center gap-4">
                                         <div className={cn(
                                             "flex h-10 w-10 items-center justify-center rounded-full border",
@@ -88,8 +144,17 @@ export default function TransactionsPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className={cn("font-bold", transaction.type === 'income' ? 'text-emerald-600' : 'text-foreground')}>
-                                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                                    <div className="flex items-center gap-3">
+                                        <div className={cn("font-bold", transaction.type === 'income' ? 'text-emerald-600' : 'text-foreground')}>
+                                            {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                                        </div>
+                                        <button
+                                            onClick={() => deleteTransaction(transaction.id)}
+                                            className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-rose-100 dark:hover:bg-rose-950 rounded-md transition-all text-rose-500"
+                                            title="Delete transaction"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
                                     </div>
                                 </div>
                             ))
@@ -97,6 +162,8 @@ export default function TransactionsPage() {
                     </div>
                 </CardContent>
             </Card>
+
+            <FloatingAddButton />
         </div>
     );
 }

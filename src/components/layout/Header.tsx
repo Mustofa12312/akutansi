@@ -2,16 +2,22 @@
 
 import { Bell } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useTransactionStore } from '@/lib/store/useTransactionStore';
 
 export function Header() {
     const pathname = usePathname();
+    const { settings } = useTransactionStore();
     const title = pathname === '/' ? 'Dashboard' : pathname.split('/')[1].charAt(0).toUpperCase() + pathname.split('/')[1].slice(1);
+
+    const initials = settings.name
+        ? settings.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+        : 'U';
 
     return (
         <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-6 sticky top-0 z-10">
             <div>
                 <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-                <p className="text-xs text-muted-foreground hidden sm:block">Welcome back, User</p>
+                <p className="text-xs text-muted-foreground hidden sm:block">Welcome back, {settings.name || 'User'}</p>
             </div>
 
             <div className="flex items-center gap-4">
@@ -20,7 +26,7 @@ export function Header() {
                     <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-card" />
                 </button>
                 <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm border border-emerald-200">
-                    U
+                    {initials}
                 </div>
             </div>
         </header>

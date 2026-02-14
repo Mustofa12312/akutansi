@@ -10,7 +10,9 @@ import {
     CreditCard,
     Target
 } from 'lucide-react';
-import { cn } from '@/lib/utils'; // Fixed import path
+import { cn } from '@/lib/utils';
+import { useTransactionStore } from '@/lib/store/useTransactionStore';
+import { format } from 'date-fns';
 
 const navigation = [
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -23,6 +25,39 @@ const navigation = [
 
 export function Sidebar() {
     const pathname = usePathname();
+    const { transactions, settings } = useTransactionStore();
+
+    // Live daily limit calculation for sidebar widget
+    const now = new Date();
+    const currentMonthStr = format(now, 'yyyy-MM');
+    const todayStr = format(now, 'yyyy-MM-dd');
+
+    const spendingBudget = settings.monthlyIncome - settings.targetSavings;
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const daysRemaining = Math.max(1, daysInMonth - now.getDate() + 1);
+
+    const expensesThisMonth = transactions
+        .filter(t => t.type === 'expense' && t.date.startsWith(currentMonthStr))
+        .reduce((acc, t) => acc + t.amount, 0);
+
+    const remainingBudget = spendingBudget - expensesThisMonth;
+    const dailyLimit = Math.max(0, remainingBudget / daysRemaining);
+
+    const spentToday = transactions
+        .filter(t => t.date === todayStr && t.type === 'expense')
+        .reduce((acc, t) => acc + t.amount, 0);
+
+    const usagePercent = dailyLimit > 0 ? Math.min((spentToday / dailyLimit) * 100, 100) : 0;
+
+    let statusText = 'Safe Zone';
+    let barColor = 'bg-white';
+    if (usagePercent > 90) {
+        statusText = 'Over Limit!';
+        barColor = 'bg-rose-300';
+    } else if (usagePercent > 70) {
+        statusText = 'Warning';
+        barColor = 'bg-amber-300';
+    }
 
     return (
         <aside className="hidden md:flex flex-col w-64 bg-card border-r border-border h-full">
@@ -56,9 +91,9 @@ export function Sidebar() {
             <div className="p-4 border-t border-border">
                 <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-4 text-white">
                     <p className="text-xs font-medium opacity-90">Daily Limit Status</p>
-                    <div className="mt-2 text-lg font-bold">Safe Zone</div>
+                    <div className="mt-2 text-lg font-bold">{statusText}</div>
                     <div className="mt-1 h-1.5 bg-white/30 rounded-full overflow-hidden">
-                        <div className="h-full w-[40%] bg-white rounded-full" />
+                        <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${usagePercent}%` }} />
                     </div>
                 </div>
             </div>
