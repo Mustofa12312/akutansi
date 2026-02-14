@@ -2,7 +2,7 @@ import type { TranslationKeys } from './en';
 
 const id: TranslationKeys = {
     // Common
-    appName: 'MustofaFinal',
+    appName: 'FinalsialKU',
     welcomeBack: 'Selamat datang kembali',
     currency: 'Rp',
 

@@ -1,6 +1,6 @@
 const en = {
     // Common
-    appName: 'MustofaFinal',
+    appName: 'Finansialku',
     welcomeBack: 'Welcome back',
     currency: 'Rp',
 
