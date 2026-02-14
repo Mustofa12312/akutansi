@@ -1,31 +1,47 @@
 'use client';
 
-import { Bell } from 'lucide-react';
-import { usePathname } from 'next/navigation';
-import { useTransactionStore } from '@/lib/store/useTransactionStore';
+import { Bell } from "lucide-react";
+import { useTransactionStore } from "@/lib/store/useTransactionStore";
+import { useTranslation } from "@/lib/i18n";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { usePathname } from "next/navigation";
+
+const getPageTitle = (pathname: string, nav: Record<string, string>) => {
+    switch (pathname) {
+        case '/': return nav.dashboard;
+        case '/transactions': return nav.transactions;
+        case '/budget': return nav.budgetGoals;
+        case '/analytics': return nav.analytics;
+        case '/cards': return nav.cards;
+        case '/settings': return nav.settings;
+        default: return nav.dashboard;
+    }
+};
 
 export function Header() {
-    const pathname = usePathname();
     const { settings } = useTransactionStore();
-    const title = pathname === '/' ? 'Dashboard' : pathname.split('/')[1].charAt(0).toUpperCase() + pathname.split('/')[1].slice(1);
+    const { t } = useTranslation();
+    const pathname = usePathname();
 
     const initials = settings.name
-        ? settings.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-        : 'U';
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
 
     return (
-        <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-6 sticky top-0 z-10">
+        <header className="h-16 border-b border-border bg-background/80 backdrop-blur-sm flex items-center justify-between px-6">
             <div>
-                <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-                <p className="text-xs text-muted-foreground hidden sm:block">Welcome back, {settings.name || 'User'}</p>
+                <h1 className="text-lg font-semibold">{getPageTitle(pathname, t.nav)}</h1>
+                <p className="text-xs text-muted-foreground">{t.welcomeBack}, {settings.name}</p>
             </div>
-
-            <div className="flex items-center gap-4">
-                <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-full transition-colors relative">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-card" />
+            <div className="flex items-center gap-2">
+                <LanguageSwitcher />
+                <button className="p-2 rounded-xl hover:bg-secondary transition-colors relative">
+                    <Bell className="h-5 w-5 text-muted-foreground" />
                 </button>
-                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm border border-emerald-200">
+                <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
                     {initials}
                 </div>
             </div>

@@ -1,8 +1,9 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"; // Fixed duplicate imports
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n";
 
 interface OverviewData {
     name: string;
@@ -15,12 +16,14 @@ interface OverviewChartProps {
 }
 
 export function OverviewChart({ data }: OverviewChartProps) {
+    const { t } = useTranslation();
+
     return (
-        <Card className="col-span-4 lg:col-span-3"> {/* Expanded width */}
+        <Card className="col-span-4 lg:col-span-3">
             <CardHeader>
-                <CardTitle>Financial Overview</CardTitle>
+                <CardTitle>{t.chart.title}</CardTitle>
                 <CardDescription>
-                    Your income vs expenses over the last 30 days
+                    {t.chart.subtitle}
                 </CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
@@ -52,7 +55,7 @@ export function OverviewChart({ data }: OverviewChartProps) {
                         />
                         <Tooltip
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            formatter={(value: any) => [formatCurrency(value), "Amount"]}
+                            formatter={(value: any) => [formatCurrency(value), t.chart.amount]}
                             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                         />
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e5e5" />

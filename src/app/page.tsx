@@ -8,11 +8,13 @@ import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { SmartInsights } from '@/components/dashboard/SmartInsights';
 import { FloatingAddButton } from '@/components/layout/FloatingAddButton';
 import { useTransactionStore } from '@/lib/store/useTransactionStore';
+import { useTranslation } from '@/lib/i18n';
 import { getMonthlyChartData } from '@/lib/utils/analytics';
 import { format } from 'date-fns';
 
 export default function DashboardPage() {
     const { transactions, settings } = useTransactionStore();
+    const { t } = useTranslation();
     const [mounted, setMounted] = useState(false);
 
     // Avoid hydration mismatch
@@ -35,25 +37,15 @@ export default function DashboardPage() {
     const balance = totalIncome - totalExpense;
 
     // Daily Limit Logic
-    // 1. Calculate safe spending budget: Income - Savings
     const spendingBudget = settings.monthlyIncome - settings.targetSavings;
-
-    // 2. Count days remaining in this month
     const now = new Date();
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     const daysRemaining = Math.max(1, daysInMonth - now.getDate() + 1);
-
-    // 3. Calculate expenses accumulated this month so far
     const currentMonthStr = format(now, 'yyyy-MM');
     const expensesThisMonth = transactions
         .filter(t => t.type === 'expense' && t.date.startsWith(currentMonthStr))
         .reduce((acc, t) => acc + t.amount, 0);
-
-    // 4. Remaining budget for the rest of the month
     const remainingBudget = spendingBudget - expensesThisMonth;
-
-    // 5. Daily Limit = Remaining Budget / Remaining Days
-    // (Or alternatively: (Budget / 30) - (excess spending)) -> Let's stick to simple "Safe to spend today"
     const dailyLimit = Math.max(0, remainingBudget / daysRemaining);
 
     // Spent Today
@@ -69,15 +61,15 @@ export default function DashboardPage() {
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="flex items-center justify-between space-y-2">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+                    <h2 className="text-3xl font-bold tracking-tight">{t.dashboard.title}</h2>
                     <p className="text-muted-foreground">
-                        Hi, {settings.name}. Here is your financial overview.
+                        {t.dashboard.greeting.replace('{name}', settings.name)}
                     </p>
                 </div>
             </div>
 
             <SummaryCards
-                totalIncome={totalIncome} // Note: This shows cumulative income, maybe better to show Monthly Income setting?
+                totalIncome={totalIncome}
                 totalExpense={totalExpense}
                 balance={balance}
                 savingsTarget={settings.targetSavings}

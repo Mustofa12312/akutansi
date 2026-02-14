@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTransactionStore } from '@/lib/store/useTransactionStore';
+import { useTranslation } from '@/lib/i18n';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { formatCurrency, cn } from '@/lib/utils';
@@ -10,6 +11,7 @@ import { format } from 'date-fns';
 
 export default function BudgetPage() {
     const { transactions, settings } = useTransactionStore();
+    const { t } = useTranslation();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -25,14 +27,13 @@ export default function BudgetPage() {
     const daysPassed = now.getDate();
     const daysRemaining = daysInMonth - daysPassed;
 
-    // Monthly calculations
     const monthlyIncome = transactions
-        .filter(t => t.type === 'income' && t.date.startsWith(currentMonthStr))
-        .reduce((acc, t) => acc + t.amount, 0);
+        .filter(tx => tx.type === 'income' && tx.date.startsWith(currentMonthStr))
+        .reduce((acc, tx) => acc + tx.amount, 0);
 
     const monthlyExpense = transactions
-        .filter(t => t.type === 'expense' && t.date.startsWith(currentMonthStr))
-        .reduce((acc, t) => acc + t.amount, 0);
+        .filter(tx => tx.type === 'expense' && tx.date.startsWith(currentMonthStr))
+        .reduce((acc, tx) => acc + tx.amount, 0);
 
     const spendingBudget = settings.monthlyIncome - settings.targetSavings;
     const budgetUsed = (monthlyExpense / spendingBudget) * 100;
@@ -40,12 +41,11 @@ export default function BudgetPage() {
         ? Math.min(((monthlyIncome - monthlyExpense) / settings.targetSavings) * 100, 100)
         : 0;
 
-    // Category breakdown
     const categoryMap: Record<string, number> = {};
     transactions
-        .filter(t => t.type === 'expense' && t.date.startsWith(currentMonthStr))
-        .forEach(t => {
-            categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
+        .filter(tx => tx.type === 'expense' && tx.date.startsWith(currentMonthStr))
+        .forEach(tx => {
+            categoryMap[tx.category] = (categoryMap[tx.category] || 0) + tx.amount;
         });
 
     const categories = Object.entries(categoryMap)
@@ -69,69 +69,72 @@ export default function BudgetPage() {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight">Budget & Goals</h2>
-                <p className="text-muted-foreground">
-                    Track your monthly budget and savings goals.
-                </p>
+                <h2 className="text-3xl font-bold tracking-tight">{t.budget.title}</h2>
+                <p className="text-muted-foreground">{t.budget.subtitle}</p>
             </div>
 
-            {/* Budget Overview Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Monthly Budget</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t.budget.monthlyBudget}</CardTitle>
                         <Wallet className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{formatCurrency(spendingBudget)}</div>
-                        <p className="text-xs text-muted-foreground">Income − Savings Target</p>
+                        <p className="text-xs text-muted-foreground">{t.budget.incomeSavings}</p>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Spent This Month</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t.budget.spentThisMonth}</CardTitle>
                         <TrendingDown className="h-4 w-4 text-rose-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{formatCurrency(monthlyExpense)}</div>
                         <p className={cn("text-xs", budgetUsed > 80 ? "text-rose-500" : "text-emerald-500")}>
-                            {Math.round(budgetUsed)}% of budget used
+                            {t.budget.budgetUsed.replace('{percent}', String(Math.round(budgetUsed)))}
                         </p>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Remaining Budget</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t.budget.remainingBudget}</CardTitle>
                         <Target className="h-4 w-4 text-blue-500" />
                     </CardHeader>
                     <CardContent>
                         <div className={cn("text-2xl font-bold", (spendingBudget - monthlyExpense) < 0 ? "text-rose-500" : "")}>
                             {formatCurrency(Math.max(spendingBudget - monthlyExpense, 0))}
                         </div>
-                        <p className="text-xs text-muted-foreground">{daysRemaining} days remaining</p>
+                        <p className="text-xs text-muted-foreground">
+                            {t.budget.daysRemaining.replace('{days}', String(daysRemaining))}
+                        </p>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Savings Progress</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t.budget.savingsProgress}</CardTitle>
                         <PiggyBank className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{Math.round(savingsProgress)}%</div>
-                        <p className="text-xs text-muted-foreground">of {formatCurrency(settings.targetSavings)} target</p>
+                        <p className="text-xs text-muted-foreground">
+                            {t.budget.ofTarget.replace('{target}', formatCurrency(settings.targetSavings))}
+                        </p>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Budget Progress Bar */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Monthly Budget Usage</CardTitle>
+                    <CardTitle>{t.budget.monthlyBudgetUsage}</CardTitle>
                     <CardDescription>
-                        {formatCurrency(monthlyExpense)} of {formatCurrency(spendingBudget)} spent ({Math.round(budgetUsed)}%)
+                        {t.budget.spentOfBudget
+                            .replace('{spent}', formatCurrency(monthlyExpense))
+                            .replace('{budget}', formatCurrency(spendingBudget))
+                            .replace('{percent}', String(Math.round(budgetUsed)))}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -147,7 +150,6 @@ export default function BudgetPage() {
                 </CardContent>
             </Card>
 
-            {/* Savings Goal */}
             <Card>
                 <CardHeader>
                     <div className="flex items-center gap-3">
@@ -155,8 +157,10 @@ export default function BudgetPage() {
                             <TrendingUp className="h-5 w-5 text-emerald-600" />
                         </div>
                         <div>
-                            <CardTitle>Savings Goal</CardTitle>
-                            <CardDescription>Target: {formatCurrency(settings.targetSavings)} / month</CardDescription>
+                            <CardTitle>{t.budget.savingsGoalTitle}</CardTitle>
+                            <CardDescription>
+                                {t.budget.savingsGoalTarget.replace('{target}', formatCurrency(settings.targetSavings))}
+                            </CardDescription>
                         </div>
                     </div>
                 </CardHeader>
@@ -168,21 +172,20 @@ export default function BudgetPage() {
                     />
                     <p className="text-sm text-muted-foreground mt-2">
                         {savingsProgress >= 100
-                            ? '🎉 Congratulations! You have reached your savings goal!'
-                            : `You need ${formatCurrency(Math.max(settings.targetSavings - (monthlyIncome - monthlyExpense), 0))} more to reach your goal.`}
+                            ? t.budget.savingsGoalReached
+                            : t.budget.savingsGoalRemaining.replace('{amount}', formatCurrency(Math.max(settings.targetSavings - (monthlyIncome - monthlyExpense), 0)))}
                     </p>
                 </CardContent>
             </Card>
 
-            {/* Category Breakdown */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Spending by Category</CardTitle>
-                    <CardDescription>Where your money goes this month</CardDescription>
+                    <CardTitle>{t.budget.spendingByCategory}</CardTitle>
+                    <CardDescription>{t.budget.whereMoneyGoes}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {categories.length === 0 ? (
-                        <p className="text-center py-8 text-muted-foreground">No expenses recorded this month.</p>
+                        <p className="text-center py-8 text-muted-foreground">{t.budget.noExpenses}</p>
                     ) : (
                         <div className="space-y-4">
                             {categories.map(cat => (

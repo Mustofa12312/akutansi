@@ -3,9 +3,10 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatCurrency, cn } from "@/lib/utils";
 import { ShoppingBag, Utensils, Zap, Bus, ArrowUpRight } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 interface Transaction {
-    id: string; // Changed from number to string to match store
+    id: string;
     category: string;
     amount: number;
     type: string;
@@ -29,12 +30,14 @@ const getCategoryIcon = (category: string) => {
 };
 
 export function RecentTransactions({ transactions }: RecentTransactionsProps) {
+    const { t } = useTranslation();
+
     return (
-        <Card className="col-span-4 lg:col-span-2"> {/* Adjusted column span */}
+        <Card className="col-span-4 lg:col-span-2">
             <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
+                <CardTitle>{t.recent.title}</CardTitle>
                 <CardDescription>
-                    You made {transactions.length} transactions this month.
+                    {t.recent.subtitle.replace('{count}', String(transactions.length))}
                 </CardDescription>
             </CardHeader>
             <CardContent>

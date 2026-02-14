@@ -4,10 +4,12 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { TransactionForm } from "@/components/forms/TransactionForm";
+import { useTranslation } from "@/lib/i18n";
 import { useState } from "react";
 
 export function FloatingAddButton() {
     const [open, setOpen] = useState(false);
+    const { t } = useTranslation();
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -18,7 +20,7 @@ export function FloatingAddButton() {
                         className="h-14 w-14 rounded-full shadow-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-all hover:scale-105 active:scale-95"
                     >
                         <Plus className="h-8 w-8" />
-                        <span className="sr-only">Add Transaction</span>
+                        <span className="sr-only">{t.form.addTransaction}</span>
                     </Button>
                 </div>
             </DialogTrigger>

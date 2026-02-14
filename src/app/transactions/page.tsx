@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransactionStore } from '@/lib/store/useTransactionStore';
+import { useTranslation } from '@/lib/i18n';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ const getCategoryIcon = (category: string) => {
 
 export default function TransactionsPage() {
     const { transactions, deleteTransaction } = useTransactionStore();
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
     const [mounted, setMounted] = useState(false);
@@ -41,31 +43,37 @@ export default function TransactionsPage() {
 
     if (!mounted) return null;
 
-    const filteredTransactions = transactions.filter(t => {
-        const matchesSearch = t.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            t.category.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesType = filterType === 'all' || t.type === filterType;
+    const filteredTransactions = transactions.filter(tx => {
+        const matchesSearch = tx.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            tx.category.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesType = filterType === 'all' || tx.type === filterType;
         return matchesSearch && matchesType;
     });
 
-    const totalFiltered = filteredTransactions.reduce((acc, t) =>
-        t.type === 'income' ? acc + t.amount : acc - t.amount, 0
+    const totalFiltered = filteredTransactions.reduce((acc, tx) =>
+        tx.type === 'income' ? acc + tx.amount : acc - tx.amount, 0
     );
+
+    const filterLabels: Record<string, string> = {
+        all: t.transactionsPage.all,
+        income: t.form.incomeType,
+        expense: t.form.expense,
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
+                    <h2 className="text-3xl font-bold tracking-tight">{t.transactionsPage.title}</h2>
                     <p className="text-muted-foreground">
-                        Manage and view your complete transaction history.
+                        {t.transactionsPage.subtitle}
                     </p>
                 </div>
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild>
                         <Button className="bg-emerald-600 hover:bg-emerald-700 gap-2">
                             <Plus className="h-4 w-4" />
-                            Add Transaction
+                            {t.form.addTransaction}
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[425px]">
@@ -79,7 +87,7 @@ export default function TransactionsPage() {
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search by note or category..."
+                        placeholder={t.transactionsPage.searchPlaceholder}
                         className="pl-9"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -91,13 +99,13 @@ export default function TransactionsPage() {
                             key={type}
                             onClick={() => setFilterType(type)}
                             className={cn(
-                                "px-4 py-1.5 text-sm font-medium rounded-md transition-all capitalize",
+                                "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
                                 filterType === type
                                     ? "bg-white shadow text-foreground dark:bg-slate-800"
                                     : "text-muted-foreground hover:text-foreground"
                             )}
                         >
-                            {type}
+                            {filterLabels[type]}
                         </button>
                     ))}
                 </div>
@@ -107,9 +115,9 @@ export default function TransactionsPage() {
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <div>
-                            <CardTitle>History</CardTitle>
+                            <CardTitle>{t.transactionsPage.history}</CardTitle>
                             <CardDescription>
-                                {filteredTransactions.length} transactions found
+                                {t.transactionsPage.transactionsFound.replace('{count}', String(filteredTransactions.length))}
                             </CardDescription>
                         </div>
                         <div className={cn("text-lg font-bold", totalFiltered >= 0 ? "text-emerald-600" : "text-rose-500")}>
@@ -122,8 +130,8 @@ export default function TransactionsPage() {
                         {filteredTransactions.length === 0 ? (
                             <div className="text-center py-10 text-muted-foreground">
                                 <ShoppingBag className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                                <p>No transactions found.</p>
-                                <p className="text-xs mt-1">Try adjusting your search or filters.</p>
+                                <p>{t.transactionsPage.noTransactions}</p>
+                                <p className="text-xs mt-1">{t.transactionsPage.tryAdjusting}</p>
                             </div>
                         ) : (
                             filteredTransactions.map((transaction) => (
@@ -151,7 +159,7 @@ export default function TransactionsPage() {
                                         <button
                                             onClick={() => deleteTransaction(transaction.id)}
                                             className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-rose-100 dark:hover:bg-rose-950 rounded-md transition-all text-rose-500"
-                                            title="Delete transaction"
+                                            title={t.transactionsPage.deleteTransaction}
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </button>

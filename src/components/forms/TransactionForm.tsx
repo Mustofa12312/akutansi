@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTransactionStore, TransactionType } from '@/lib/store/useTransactionStore';
+import { useTranslation } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +21,7 @@ interface TransactionFormProps {
 
 export function TransactionForm({ onSuccess }: TransactionFormProps) {
     const addTransaction = useTransactionStore((state) => state.addTransaction);
+    const { t } = useTranslation();
 
     const [type, setType] = useState<TransactionType>('expense');
     const [amount, setAmount] = useState('');
@@ -49,42 +51,42 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <DialogHeader>
-                <DialogTitle>Add Transaction</DialogTitle>
+                <DialogTitle>{t.form.addTransaction}</DialogTitle>
                 <DialogDescription>
-                    Record your income or expense to track your budget.
+                    {t.form.recordTransaction}
                 </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 py-2">
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label>Type</Label>
+                        <Label>{t.form.type}</Label>
                         <div className="flex bg-secondary p-1 rounded-lg">
                             <button
                                 type="button"
                                 onClick={() => setType('expense')}
                                 className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${type === 'expense'
-                                        ? 'bg-white shadow text-rose-500'
-                                        : 'text-muted-foreground hover:text-foreground'
+                                    ? 'bg-white shadow text-rose-500'
+                                    : 'text-muted-foreground hover:text-foreground'
                                     }`}
                             >
-                                Expense
+                                {t.form.expense}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setType('income')}
                                 className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${type === 'income'
-                                        ? 'bg-white shadow text-emerald-500'
-                                        : 'text-muted-foreground hover:text-foreground'
+                                    ? 'bg-white shadow text-emerald-500'
+                                    : 'text-muted-foreground hover:text-foreground'
                                     }`}
                             >
-                                Income
+                                {t.form.incomeType}
                             </button>
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="date">Date</Label>
+                        <Label htmlFor="date">{t.form.date}</Label>
                         <Input
                             id="date"
                             type="date"
@@ -96,7 +98,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="amount">Amount (Rp)</Label>
+                    <Label htmlFor="amount">{t.form.amount}</Label>
                     <Input
                         id="amount"
                         type="number"
@@ -109,29 +111,29 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
+                    <Label htmlFor="category">{t.form.category}</Label>
                     <Select value={category} onValueChange={setCategory} required>
                         <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
+                            <SelectValue placeholder={t.form.selectCategory} />
                         </SelectTrigger>
                         <SelectContent>
                             {type === 'expense' ? (
                                 <>
-                                    <SelectItem value="Food">Food & Dining</SelectItem>
-                                    <SelectItem value="Transport">Transportation</SelectItem>
-                                    <SelectItem value="Shopping">Shopping</SelectItem>
-                                    <SelectItem value="Utilities">Utilities (Bills)</SelectItem>
-                                    <SelectItem value="Entertainment">Entertainment</SelectItem>
-                                    <SelectItem value="Health">Health</SelectItem>
-                                    <SelectItem value="Others">Others</SelectItem>
+                                    <SelectItem value="Food">{t.categories.foodDining}</SelectItem>
+                                    <SelectItem value="Transport">{t.categories.transportation}</SelectItem>
+                                    <SelectItem value="Shopping">{t.categories.shopping}</SelectItem>
+                                    <SelectItem value="Utilities">{t.categories.utilities}</SelectItem>
+                                    <SelectItem value="Entertainment">{t.categories.entertainment}</SelectItem>
+                                    <SelectItem value="Health">{t.categories.health}</SelectItem>
+                                    <SelectItem value="Others">{t.categories.others}</SelectItem>
                                 </>
                             ) : (
                                 <>
-                                    <SelectItem value="Salary">Monthly Salary</SelectItem>
-                                    <SelectItem value="Freelance">Freelance / Proyek</SelectItem>
-                                    <SelectItem value="Bonus">Bonus / THR</SelectItem>
-                                    <SelectItem value="Investment">Investment Return</SelectItem>
-                                    <SelectItem value="Others">Others</SelectItem>
+                                    <SelectItem value="Salary">{t.categories.monthlySalary}</SelectItem>
+                                    <SelectItem value="Freelance">{t.categories.freelance}</SelectItem>
+                                    <SelectItem value="Bonus">{t.categories.bonus}</SelectItem>
+                                    <SelectItem value="Investment">{t.categories.investmentReturn}</SelectItem>
+                                    <SelectItem value="Others">{t.categories.others}</SelectItem>
                                 </>
                             )}
                         </SelectContent>
@@ -139,10 +141,10 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="note">Note (Optional)</Label>
+                    <Label htmlFor="note">{t.form.note}</Label>
                     <Input
                         id="note"
-                        placeholder="e.g. Lunch at McD"
+                        placeholder={t.form.notePlaceholder}
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
                     />
@@ -151,7 +153,7 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
 
             <DialogFooter>
                 <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700">
-                    Save Transaction
+                    {t.form.save}
                 </Button>
             </DialogFooter>
         </form>

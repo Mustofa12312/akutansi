@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTransactionStore } from '@/lib/store/useTransactionStore';
+import { useTranslation } from '@/lib/i18n';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,7 @@ import { User, DollarSign, Save, Trash2 } from 'lucide-react';
 
 export default function SettingsPage() {
     const { settings, updateSettings, transactions } = useTransactionStore();
+    const { t } = useTranslation();
     const [mounted, setMounted] = useState(false);
     const [name, setName] = useState('');
     const [monthlyIncome, setMonthlyIncome] = useState('');
@@ -45,7 +47,7 @@ export default function SettingsPage() {
     };
 
     const handleClearData = () => {
-        if (confirm('Are you sure you want to clear all transaction data? This cannot be undone.')) {
+        if (confirm(t.settingsPage.clearConfirm)) {
             localStorage.removeItem('finsmart-storage');
             window.location.reload();
         }
@@ -54,10 +56,8 @@ export default function SettingsPage() {
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
-                <p className="text-muted-foreground">
-                    Configure your profile and financial settings.
-                </p>
+                <h2 className="text-3xl font-bold tracking-tight">{t.settingsPage.title}</h2>
+                <p className="text-muted-foreground">{t.settingsPage.subtitle}</p>
             </div>
 
             {/* Profile Settings */}
@@ -68,17 +68,17 @@ export default function SettingsPage() {
                             <User className="h-5 w-5 text-emerald-600" />
                         </div>
                         <div>
-                            <CardTitle>Profile</CardTitle>
-                            <CardDescription>Your personal information</CardDescription>
+                            <CardTitle>{t.settingsPage.profile}</CardTitle>
+                            <CardDescription>{t.settingsPage.personalInfo}</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Display Name</Label>
+                        <Label htmlFor="name">{t.settingsPage.displayName}</Label>
                         <Input
                             id="name"
-                            placeholder="Your name"
+                            placeholder={t.settingsPage.namePlaceholder}
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                         />
@@ -94,14 +94,14 @@ export default function SettingsPage() {
                             <DollarSign className="h-5 w-5 text-blue-600" />
                         </div>
                         <div>
-                            <CardTitle>Financial Settings</CardTitle>
-                            <CardDescription>Configure your income and budget parameters</CardDescription>
+                            <CardTitle>{t.settingsPage.financialSettings}</CardTitle>
+                            <CardDescription>{t.settingsPage.configureIncome}</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="income">Monthly Income (Rp)</Label>
+                        <Label htmlFor="income">{t.settingsPage.monthlyIncome}</Label>
                         <Input
                             id="income"
                             type="number"
@@ -110,12 +110,12 @@ export default function SettingsPage() {
                             onChange={(e) => setMonthlyIncome(e.target.value)}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Current: {formatCurrency(settings.monthlyIncome)}
+                            {t.settingsPage.currentValue.replace('{value}', formatCurrency(settings.monthlyIncome))}
                         </p>
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="savings">Monthly Savings Target (Rp)</Label>
+                        <Label htmlFor="savings">{t.settingsPage.savingsTarget}</Label>
                         <Input
                             id="savings"
                             type="number"
@@ -124,18 +124,16 @@ export default function SettingsPage() {
                             onChange={(e) => setTargetSavings(e.target.value)}
                         />
                         <p className="text-xs text-muted-foreground">
-                            Current: {formatCurrency(settings.targetSavings)}
+                            {t.settingsPage.currentValue.replace('{value}', formatCurrency(settings.targetSavings))}
                         </p>
                     </div>
 
                     <div className="bg-secondary/50 rounded-lg p-4 space-y-1">
-                        <p className="text-sm font-medium">Calculated Daily Limit</p>
+                        <p className="text-sm font-medium">{t.settingsPage.calculatedDaily}</p>
                         <p className="text-2xl font-bold text-emerald-600">
                             {formatCurrency(Math.max(0, (Number(monthlyIncome) - Number(targetSavings)) / 30))}
                         </p>
-                        <p className="text-xs text-muted-foreground">
-                            = (Monthly Income − Savings Target) ÷ 30 days
-                        </p>
+                        <p className="text-xs text-muted-foreground">{t.settingsPage.dailyFormula}</p>
                     </div>
                 </CardContent>
             </Card>
@@ -144,7 +142,7 @@ export default function SettingsPage() {
             <div className="flex gap-4">
                 <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700 gap-2">
                     <Save className="h-4 w-4" />
-                    {saved ? 'Saved ✓' : 'Save Changes'}
+                    {saved ? t.settingsPage.saved : t.settingsPage.saveChanges}
                 </Button>
             </div>
 
@@ -156,22 +154,22 @@ export default function SettingsPage() {
                             <Trash2 className="h-5 w-5 text-rose-600" />
                         </div>
                         <div>
-                            <CardTitle>Danger Zone</CardTitle>
-                            <CardDescription>Data management actions</CardDescription>
+                            <CardTitle>{t.settingsPage.dangerZone}</CardTitle>
+                            <CardDescription>{t.settingsPage.dataManagement}</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="font-medium text-sm">Clear All Data</p>
+                            <p className="font-medium text-sm">{t.settingsPage.clearAllData}</p>
                             <p className="text-xs text-muted-foreground">
-                                Remove all {transactions.length} transactions and reset settings.
+                                {t.settingsPage.clearDescription.replace('{count}', String(transactions.length))}
                             </p>
                         </div>
                         <Button variant="destructive" size="sm" onClick={handleClearData} className="gap-2">
                             <Trash2 className="h-4 w-4" />
-                            Clear Data
+                            {t.settingsPage.clearButton}
                         </Button>
                     </div>
                 </CardContent>

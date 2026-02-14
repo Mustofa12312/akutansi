@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTransactionStore } from '@/lib/store/useTransactionStore';
+import { useTranslation } from '@/lib/i18n';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { formatCurrency, cn } from '@/lib/utils';
 import { BarChart3, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight } from 'lucide-react';
@@ -15,6 +16,7 @@ const COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#8b5cf6', '#ec4899'
 
 export default function AnalyticsPage() {
     const { transactions } = useTransactionStore();
+    const { t } = useTranslation();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -27,73 +29,61 @@ export default function AnalyticsPage() {
     const now = new Date();
     const currentMonthStr = format(now, 'yyyy-MM');
 
-    // Monthly totals
     const monthlyIncome = transactions
-        .filter(t => t.type === 'income' && t.date.startsWith(currentMonthStr))
-        .reduce((acc, t) => acc + t.amount, 0);
+        .filter(tx => tx.type === 'income' && tx.date.startsWith(currentMonthStr))
+        .reduce((acc, tx) => acc + tx.amount, 0);
 
     const monthlyExpense = transactions
-        .filter(t => t.type === 'expense' && t.date.startsWith(currentMonthStr))
-        .reduce((acc, t) => acc + t.amount, 0);
+        .filter(tx => tx.type === 'expense' && tx.date.startsWith(currentMonthStr))
+        .reduce((acc, tx) => acc + tx.amount, 0);
 
     const netFlow = monthlyIncome - monthlyExpense;
 
-    // Daily spending trend (last 14 days)
     const days14 = eachDayOfInterval({ start: subDays(now, 13), end: now });
     const dailyTrend = days14.map(day => {
         const dayStr = format(day, 'yyyy-MM-dd');
         const expense = transactions
-            .filter(t => t.type === 'expense' && t.date === dayStr)
-            .reduce((acc, t) => acc + t.amount, 0);
+            .filter(tx => tx.type === 'expense' && tx.date === dayStr)
+            .reduce((acc, tx) => acc + tx.amount, 0);
         const income = transactions
-            .filter(t => t.type === 'income' && t.date === dayStr)
-            .reduce((acc, t) => acc + t.amount, 0);
-        return {
-            name: format(day, 'dd MMM'),
-            expense,
-            income,
-        };
+            .filter(tx => tx.type === 'income' && tx.date === dayStr)
+            .reduce((acc, tx) => acc + tx.amount, 0);
+        return { name: format(day, 'dd MMM'), expense, income };
     });
 
-    // Category pie data
     const categoryMap: Record<string, number> = {};
     transactions
-        .filter(t => t.type === 'expense' && t.date.startsWith(currentMonthStr))
-        .forEach(t => {
-            categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
+        .filter(tx => tx.type === 'expense' && tx.date.startsWith(currentMonthStr))
+        .forEach(tx => {
+            categoryMap[tx.category] = (categoryMap[tx.category] || 0) + tx.amount;
         });
     const pieData = Object.entries(categoryMap).map(([name, value]) => ({ name, value }));
 
-    // Top spending days
     const daySpendingMap: Record<string, number> = {};
     transactions
-        .filter(t => t.type === 'expense' && t.date.startsWith(currentMonthStr))
-        .forEach(t => {
-            daySpendingMap[t.date] = (daySpendingMap[t.date] || 0) + t.amount;
+        .filter(tx => tx.type === 'expense' && tx.date.startsWith(currentMonthStr))
+        .forEach(tx => {
+            daySpendingMap[tx.date] = (daySpendingMap[tx.date] || 0) + tx.amount;
         });
     const topDays = Object.entries(daySpendingMap)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 5)
         .map(([date, amount]) => ({ date: format(new Date(date), 'dd MMM yyyy'), amount }));
 
-    // Average daily spending
     const totalDays = Object.keys(daySpendingMap).length || 1;
     const avgDaily = monthlyExpense / totalDays;
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-                <h2 className="text-3xl font-bold tracking-tight">Analytics</h2>
-                <p className="text-muted-foreground">
-                    Deep insights into your financial patterns.
-                </p>
+                <h2 className="text-3xl font-bold tracking-tight">{t.analyticsPage.title}</h2>
+                <p className="text-muted-foreground">{t.analyticsPage.subtitle}</p>
             </div>
 
-            {/* Summary Stats */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Monthly Income</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t.analyticsPage.monthlyIncome}</CardTitle>
                         <ArrowUpRight className="h-4 w-4 text-emerald-500" />
                     </CardHeader>
                     <CardContent>
@@ -103,7 +93,7 @@ export default function AnalyticsPage() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Monthly Expenses</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t.analyticsPage.monthlyExpenses}</CardTitle>
                         <ArrowDownRight className="h-4 w-4 text-rose-500" />
                     </CardHeader>
                     <CardContent>
@@ -113,7 +103,7 @@ export default function AnalyticsPage() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Net Cash Flow</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t.analyticsPage.netCashFlow}</CardTitle>
                         {netFlow >= 0 ? <TrendingUp className="h-4 w-4 text-emerald-500" /> : <TrendingDown className="h-4 w-4 text-rose-500" />}
                     </CardHeader>
                     <CardContent>
@@ -125,7 +115,7 @@ export default function AnalyticsPage() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Avg. Daily Spending</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t.analyticsPage.avgDailySpending}</CardTitle>
                         <BarChart3 className="h-4 w-4 text-blue-500" />
                     </CardHeader>
                     <CardContent>
@@ -134,11 +124,10 @@ export default function AnalyticsPage() {
                 </Card>
             </div>
 
-            {/* Income vs Expense Chart */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Daily Trend (Last 14 Days)</CardTitle>
-                    <CardDescription>Income vs Expenses comparison</CardDescription>
+                    <CardTitle>{t.analyticsPage.dailyTrend}</CardTitle>
+                    <CardDescription>{t.analyticsPage.incomeVsExpenses}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="h-[300px]">
@@ -171,15 +160,14 @@ export default function AnalyticsPage() {
             </Card>
 
             <div className="grid gap-4 md:grid-cols-2">
-                {/* Category Pie Chart */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Expense Categories</CardTitle>
-                        <CardDescription>Distribution of spending</CardDescription>
+                        <CardTitle>{t.analyticsPage.expenseCategories}</CardTitle>
+                        <CardDescription>{t.analyticsPage.distribution}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {pieData.length === 0 ? (
-                            <p className="text-center py-12 text-muted-foreground">No expense data this month.</p>
+                            <p className="text-center py-12 text-muted-foreground">{t.analyticsPage.noExpenseData}</p>
                         ) : (
                             <div className="h-[280px]">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -209,15 +197,14 @@ export default function AnalyticsPage() {
                     </CardContent>
                 </Card>
 
-                {/* Top Spending Days */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Top Spending Days</CardTitle>
-                        <CardDescription>Your highest spending days this month</CardDescription>
+                        <CardTitle>{t.analyticsPage.topSpendingDays}</CardTitle>
+                        <CardDescription>{t.analyticsPage.highestSpending}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {topDays.length === 0 ? (
-                            <p className="text-center py-12 text-muted-foreground">No data yet.</p>
+                            <p className="text-center py-12 text-muted-foreground">{t.analyticsPage.noData}</p>
                         ) : (
                             <div className="h-[280px]">
                                 <ResponsiveContainer width="100%" height="100%">
