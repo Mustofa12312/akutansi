@@ -203,6 +203,22 @@ const ar: TranslationKeys = {
         clearDescription: 'حذف جميع {count} معاملة وإعادة تعيين الإعدادات.',
         clearButton: 'مسح البيانات',
         clearConfirm: 'هل أنت متأكد من حذف جميع البيانات؟ لا يمكن التراجع عن هذا.',
+
+        // Category Management
+        manageCategories: 'إدارة الفئات',
+        addCategory: 'إضافة فئة',
+        categoryName: 'اسم الفئة',
+        categoryType: 'نوع الفئة',
+        deleteCategoryConfirm: 'حذف هذه الفئة؟ المعاملات التي تستخدمها ستبقى.',
+
+        // Data Backup
+        backupRestore: 'النسخ الاحتياطي والاستعادة',
+        exportData: 'تصدير البيانات (نسخ احتياطي)',
+        importData: 'استيراد البيانات (استعادة)',
+        exportDescription: 'تنزيل بياناتك كملف JSON للحفظ.',
+        importDescription: 'استعادة البيانات من ملف JSON. تحذير: سيتم استبدال البيانات الحالية.',
+        importSuccess: 'تم استعادة البيانات بنجاح!',
+        importError: 'فشل استعادة البيانات. تأكد من صلاحية الملف.',
     },
 
     // Language

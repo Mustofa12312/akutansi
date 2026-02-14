@@ -201,6 +201,22 @@ const en = {
         clearDescription: 'Remove all {count} transactions and reset settings.',
         clearButton: 'Clear Data',
         clearConfirm: 'Are you sure you want to clear all transaction data? This cannot be undone.',
+
+        // Category Management
+        manageCategories: 'Manage Categories',
+        addCategory: 'Add Category',
+        categoryName: 'Category Name',
+        categoryType: 'Category Type',
+        deleteCategoryConfirm: 'Delete this category? Transactions using it will remain.',
+
+        // Data Backup
+        backupRestore: 'Backup & Restore Data',
+        exportData: 'Export Data (Backup)',
+        importData: 'Import Data (Restore)',
+        exportDescription: 'Download your data as a JSON file for safekeeping.',
+        importDescription: 'Restore data from a JSON file. WARNING: Current data will be overwritten.',
+        importSuccess: 'Data restored successfully!',
+        importError: 'Failed to restore data. Ensure file is valid.',
     },
 
     // Language

@@ -117,25 +117,35 @@ export function TransactionForm({ onSuccess }: TransactionFormProps) {
                             <SelectValue placeholder={t.form.selectCategory} />
                         </SelectTrigger>
                         <SelectContent>
-                            {type === 'expense' ? (
-                                <>
-                                    <SelectItem value="Food">{t.categories.foodDining}</SelectItem>
-                                    <SelectItem value="Transport">{t.categories.transportation}</SelectItem>
-                                    <SelectItem value="Shopping">{t.categories.shopping}</SelectItem>
-                                    <SelectItem value="Utilities">{t.categories.utilities}</SelectItem>
-                                    <SelectItem value="Entertainment">{t.categories.entertainment}</SelectItem>
-                                    <SelectItem value="Health">{t.categories.health}</SelectItem>
-                                    <SelectItem value="Others">{t.categories.others}</SelectItem>
-                                </>
-                            ) : (
-                                <>
-                                    <SelectItem value="Salary">{t.categories.monthlySalary}</SelectItem>
-                                    <SelectItem value="Freelance">{t.categories.freelance}</SelectItem>
-                                    <SelectItem value="Bonus">{t.categories.bonus}</SelectItem>
-                                    <SelectItem value="Investment">{t.categories.investmentReturn}</SelectItem>
-                                    <SelectItem value="Others">{t.categories.others}</SelectItem>
-                                </>
-                            )}
+                            {/* Filter categories by selected type */}
+                            {useTransactionStore((state) => state.categories)
+                                .filter((cat) => cat.type === type)
+                                .map((cat) => {
+                                    // Map default category names to translation keys
+                                    let displayName = cat.name;
+                                    if (cat.isDefault) {
+                                        const map: Record<string, string> = {
+                                            'Food': t.categories.foodDining,
+                                            'Transport': t.categories.transportation,
+                                            'Shopping': t.categories.shopping,
+                                            'Utilities': t.categories.utilities,
+                                            'Entertainment': t.categories.entertainment,
+                                            'Health': t.categories.health,
+                                            'Others': t.categories.others,
+                                            'Salary': t.categories.monthlySalary,
+                                            'Freelance': t.categories.freelance,
+                                            'Bonus': t.categories.bonus,
+                                            'Investment': t.categories.investmentReturn,
+                                        };
+                                        if (map[cat.name]) displayName = map[cat.name];
+                                    }
+
+                                    return (
+                                        <SelectItem key={cat.id} value={cat.name}>
+                                            {displayName}
+                                        </SelectItem>
+                                    );
+                                })}
                         </SelectContent>
                     </Select>
                 </div>

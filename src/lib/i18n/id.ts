@@ -203,6 +203,22 @@ const id: TranslationKeys = {
         clearDescription: 'Hapus semua {count} transaksi dan reset pengaturan.',
         clearButton: 'Hapus Data',
         clearConfirm: 'Apakah Anda yakin ingin menghapus semua data transaksi? Tindakan ini tidak dapat dibatalkan.',
+
+        // Category Management
+        manageCategories: 'Kelola Kategori',
+        addCategory: 'Tambah Kategori',
+        categoryName: 'Nama Kategori',
+        categoryType: 'Tipe Kategori',
+        deleteCategoryConfirm: 'Hapus kategori ini? Transaksi yang menggunakan kategori ini akan tetap ada.',
+
+        // Data Backup
+        backupRestore: 'Cadangkan & Pulihkan Data',
+        exportData: 'Ekspor Data (Backup)',
+        importData: 'Impor Data (Restore)',
+        exportDescription: 'Unduh data Anda sebagai file JSON untuk disimpan.',
+        importDescription: 'Pulihkan data dari file JSON. PERINGATAN: Data saat ini akan ditimpa.',
+        importSuccess: 'Data berhasil dipulihkan!',
+        importError: 'Gagal memulihkan data. Pastikan file valid.',
     },
 
     // Language
